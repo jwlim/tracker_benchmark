@@ -70,6 +70,12 @@ h = initstate(4);% height of the rectangle
 %--------------------------------------------------------
 res = initstate;
 duration = 0;
+if ~isempty(dumppath_fmt)
+    img = imread(sprintf(imgfilepath_fmt, img_range(1)));
+    if size(img,3) == 3, img = rgb2gray(img); end;
+    PlotResultRect(img, img_range(1), initstate, dumppath_fmt);
+end
+
 for i = 2:num_frames
     img = imread(sprintf(imgfilepath_fmt, img_range(i)));
     if size(img,3) == 3, img = rgb2gray(img); end;
@@ -112,15 +118,7 @@ for i = 2:num_frames
     res = [res; initstate];
     
     if ~isempty(dumppath_fmt)
-        imshow(uint8(img));
-        rectangle('Position',initstate,'LineWidth',4,'EdgeColor','r');
-        hold on;
-        text(5, 18, strcat('#',num2str(i)), 'Color','y', 'FontWeight','bold', 'FontSize',20);
-        set(gca,'position',[0 0 1 1]); 
-        hold off;
-%         saveas(gcf,[res_path num2str(i) '.jpg'])
-        drawnow;
-        imwrite(frame2im(getframe(gcf)), sprintf(dumppath_fmt, img_range(i)));
+        PlotResultRect(img, img_range(i), initstate, dumppath_fmt);
     end
 end
 

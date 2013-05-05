@@ -47,14 +47,6 @@ randn('state',0);
 % Copyright (C) Jongwoo Lim and David Ross.
 % All rights reserved.
 
-% global result_corners;
-% global result_rect;
-% global frame_num;
-% 
-% result_corners = zeros(2,4,seq.len);
-% result_rect = zeros(4,seq.len);
-% frame_num = 1;
-
 img = imread(sprintf(imgfilepath_fmt, img_range(1)));
 if size(img, 3) == 3, img = rgb2gray(img); end
 % initialize variables
@@ -164,12 +156,7 @@ for f = 2:num_frames
     end
     
     result_affmat(:,f) = param.est;
-    %global parameter, see drawbox.m
-%     save([paraD.res_path paraD.name '_corners.mat'], 'result_corners')
-%     save([paraD.res_path paraD.name '_rect.mat'], 'result_rect')
-%     save([paraD.res_path paraD.name '_affmat.mat'], 'result_affmat')
 end
-% save([paraD.res_path paraD.name '_ivt.mat'], 'result_rect');
 
 
 results.type = 'affine_ivt';

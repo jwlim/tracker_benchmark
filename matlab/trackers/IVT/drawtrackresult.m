@@ -24,13 +24,21 @@ if (isempty(drawopt))
   set(gcf,'DoubleBuffer','on','MenuBar','none');
   colormap('gray');
   drawopt.curaxis = [];
-  [fh,fw] = size(frame);  [th,tw] = size(tmpl.mean);
-  hb = th / (fh/fw*(5*tw) + 3*th);
+  [fh,fw] = size(frame);
+  [th,tw] = size(tmpl.mean);
+  [th,th] = deal(th * 2, tw * 2);
+  fig_w = max(fw, 5*tw);
+  fig_h = fh + 3*th;
+  ResizeFigure(fig_w, fig_h);
+  drawopt.curaxis.frm  = axes('position', [0.00 1-fh/fig_h 1.00 fh/fig_h]);
+  drawopt.curaxis.window = axes('position', [0.00 2*th/fig_h 1.00 th/fig_h]);
+  drawopt.curaxis.basis = axes('position', [0.00 0.00 1.00 2*th/fig_h]);
+%   hb = th / (fh/fw*(5*tw) + 3*th);
 %   drawopt.curaxis.frm  = axes('position', [0.00 0.00 1.00 1.00]);
 %
-  drawopt.curaxis.frm  = axes('position', [0.00 3*hb 1.00 1-3*hb]);
-  drawopt.curaxis.window = axes('position', [0.00 2*hb 1.00 hb]);
-  drawopt.curaxis.basis = axes('position', [0.00 0.00 1.00 2*hb]);
+%   drawopt.curaxis.frm  = axes('position', [0.00 3*hb 1.00 1-3*hb]);
+%   drawopt.curaxis.window = axes('position', [0.00 2*hb 1.00 hb]);
+%   drawopt.curaxis.basis = axes('position', [0.00 0.00 1.00 2*hb]);
   drawopt.showcoef = 0;  drawopt.magcoef = 3;
   drawopt.showcondens = 0;  drawopt.thcondens = 0.001;
 end
@@ -112,3 +120,17 @@ if (isfield(curaxis, 'graph') && isfield(param,'err') && fno > 0)
 %  plot(drawopt.sumsqerr);
 end
 drawnow;
+end
+
+
+function ResizeFigure(w, h)
+
+old_units = get(gcf, 'Units');
+set(gcf, 'Units', 'pixels');
+figpos = get(gcf, 'Position');
+newpos = [figpos(1), figpos(2), w, h];
+set(gcf, 'Position', newpos);
+set(gcf, 'Units', old_units);
+set(gcf, 'Resize', 'off');
+
+end

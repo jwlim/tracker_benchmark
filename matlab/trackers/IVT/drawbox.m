@@ -40,17 +40,7 @@ end
 
 %corners = [ 1,0,0; 1,w,0; 1,w,h; 1,0,h; 1,0,0 ]';
 corners = [ 1,-w/2,-h/2; 1,w/2,-h/2; 1,w/2,h/2; 1,-w/2,h/2; 1,-w/2,-h/2 ]';
-corners = M * corners;
-global result_corners;
-global result_rect;
-global frame_num;
-result_corners(:,:,frame_num) = round(corners(:,1:4));
-x=result_corners(1,1,frame_num);
-y=result_corners(2,1,frame_num);
-w=result_corners(1,3,frame_num)-result_corners(1,1,frame_num)+1;
-h=result_corners(2,3,frame_num)-result_corners(2,1,frame_num)+1;
-result_rect(:,frame_num) = [x y w h];
-    
+corners = M * corners;    
 
 line(corners(1,:), corners(2,:), varargin{:});
 % patch(corners(1,:), corners(2,:), 'y', ...
