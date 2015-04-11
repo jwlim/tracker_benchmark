@@ -1,7 +1,27 @@
 
-function results = Run_CT(imgfilepath_fmt, img_range, init_rect, dumppath_fmt)
+function results = Run_CT(imgfilepath_fmt, img_range_str, init_rect, run_opt)
 
-% mex function integral needs to be compiled.
+%- Platform check.
+if nargin < 1
+  switch computer('arch')
+    case {'win32', 'win64', 'glnx86', 'glnx64', 'maci64'}
+      results = {};  %- Supported platforms. Do nothing.
+    case {}
+      error(['Unsupported planform - ' computer('arch') '.']);
+    otherwise
+      error(['Unknown planform - ' computer('arch') '.']);
+  end
+  return;
+end
+
+if nargin < 4, run_opt = struct('dumppath_fmt','-', 'tracker_path','./'); end;
+
+img_range = eval(img_range_str);
+num_frames = numel(img_range);
+res = zeros(num_frames, 4);
+res(1, :) = init_rect;
+
+% mex function integral needs to be compiled - use Setup_CT.m
 
 rand('state', 0);
 randn('state', 0);
@@ -21,13 +41,12 @@ M = 150;  % number of all weaker classifiers, i.e,feature pool
 
 initstate = init_rect;  % object position [x y width height]
 
-num_frames = numel(img_range);
-
 img = imread(sprintf(imgfilepath_fmt, img_range(1)));
 if size(img,3) == 3, img = rgb2gray(img); end;
 img = double(img);
 img = img - mean(img(:));
 
+tic;
 
 % Sometimes, it affects the results.
 %-------------------------
@@ -68,12 +87,12 @@ y = initstate(2);
 w = initstate(3);% width of the rectangle
 h = initstate(4);% height of the rectangle
 %--------------------------------------------------------
-res = initstate;
-duration = 0;
-if ~isempty(dumppath_fmt)
+
+duration = toc;
+if ~isempty(run_opt.dumppath_fmt)
     img = imread(sprintf(imgfilepath_fmt, img_range(1)));
     if size(img,3) == 3, img = rgb2gray(img); end;
-    PlotResultRect(img, img_range(1), initstate, dumppath_fmt);
+    PlotResultRect(img, img_range(1), initstate, run_opt.dumppath_fmt);
 end
 
 for i = 2:num_frames
@@ -83,7 +102,7 @@ for i = 2:num_frames
 %     img = imread(s_frames{i});
 %     img = double(img(:,:,1));
     
-    tic
+    tic;
     
     detectx.sampleImage = sampleImg(img,initstate,trparams.srchwinsz,0,100000);   
     iH = integral(img);%Compute integral image
@@ -115,19 +134,20 @@ for i = 2:num_frames
     
     duration = duration + toc;
     
-    res = [res; initstate];
+    res(i, :) = initstate;
     
-    if ~isempty(dumppath_fmt)
-        PlotResultRect(img, img_range(i), initstate, dumppath_fmt);
+    if ~isempty(run_opt.dumppath_fmt)
+        PlotResultRect(img, img_range(i), initstate, run_opt.dumppath_fmt);
     end
 end
 
 % fileName = sprintf('%s%s_CT.mat',res_path,seq.name);
 % save(fileName,'result');
+% save([res_path seq.name '_CT.mat'], 'results');
 
-results.res=res;
-results.type='rect';
-results.fps=(num_frames - 1) / duration;
+results.res = res;
+results.type = 'rect';
+results.fps = num_frames / duration;
 
 fprintf('%d frames in %.3f seconds : %.3ffps\n', num_frames, duration, results.fps);
-% save([res_path seq.name '_CT.mat'], 'results');
+end

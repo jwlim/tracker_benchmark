@@ -1,341 +1,217 @@
 
-function [results, opt] = RunTrackers(test_name, trackers, sequences, varargin)
+function [results, opt] = RunTrackers(test_name, sequences, trackers, varargin)
 %
-% RunTrackers : run the trackers for the test sequences.
+% RunTrackers
+% - run the trackers on the test sequences.
 %
 % Usage:
-%   RunTrackers(test_name, trackers, sequences, ...)
-%     - scan the tracker_dir and setup all available trackers.
-%     -> test_name : an arbitrary string for identifying the test.
-%     -> trackers : a string or a cell array of tracker names.
-%     -> sequences : a string or a cell array of test sequence names.
-%    Options:
-%     - tracker_dir : the directory containing the trackers.
-%           (default: ./trackers)
-%     - data_dir : the directory containing the test sequences.
-%           (default: ../data)
-%     - out_dir : the directory to store the test results (optional).
-%           (default: ../results)
-%     - result_img_dump : flag if the tracking result image is dumped.
-%           It requires out_dir set. (default: false)
+% [results, opt] = RunTrackers(test_name, sequences, trackers, ...)
+% - test_name : the test name.
+% - sequences : a name string or a cell array of test sequence names.
+%       Use 'ALL' to run the trackers on all sequences. Also attribute names
+%       or benchmark names such as 'OPR' or 'V11_50' can be used. Check the
+%       field names of the global variable SEQUENCE_ANNOTATIONS.
+% - trackers : a name string or a cell array of tracker names.
+%       Use '*' to run all trackers. To see which trackers are setup, check
+%       the field names of the global variable TRACKER_DIRS.
+% - results : the struct with parameters and loaded tracking results.
+% - opt : the option used in running the tracker.
 %
-%   [results, opt] = RunTrackers(...)
-%     - returns the test results and the options used for testing.
+% Options:
+% - tracker_dir : the directory containing the trackers. (default: ./trackers)
+% - data_dir : the directory containing the test sequences. (default: ../data)
+% - result_dir : the directory to store the test results. (default: ../results)
+% - test_type : one-pass evaluation (OPE), temporal robustness evaluation (TRE),
+%       or spatial robustness evaluation (SRE). (default: 'OPE')
+% - warn_tracker_errors : catch tracker errors and warn them (tracker continues).
+% - plot_result : flag if the tracking result image is displayed or dumped.
+%       If 'show' is given, images are only shown on the screen. If 'dump',
+%       the images are stored in a directory under result_dir. (default: 'show')
 
 % Authors: Jongwoo Lim (jongwoo.lim@gmail.com)
-%          Yi Wu ()
-%
+%          Yi Wu (ywu.china@gmail.com)
 
-if ~iscell(trackers), trackers = {trackers}; end;
-if ~iscell(sequences), sequences = {sequences}; end;
 
+global TRACKER_DIRS;
+if isempty(TRACKER_DIRS)
+  error('TRACKER_DIR is not set. Run SetupTrackers script first.');
+end
+
+%- Process options.
 if numel(varargin) == 1 && isstruct(varargin{1})
   opt = varargin{1};
 else
-  opt = struct('tracker_dir', './trackers', 'data_dir', '../data', ...
-    'out_dir', '../results/', 'result_img_dump', false);
-  if ~isempty(varargin), opt = setfield(opt, varargin{:}); end;
+  opt = struct();
+  for i = 1:2:numel(varargin), opt.(varargin{i}) = varargin{i + 1}; end;
 end
+if ~isfield(opt, 'tracker_dir'), opt.tracker_dir = './trackers'; end;
+if ~isfield(opt, 'data_dir'), opt.data_dir = '../data'; end;
+if ~isfield(opt, 'result_dir'), opt.result_dir = '../results'; end;
+if ~isfield(opt, 'test_type'), opt.test_type = 'OPE'; end;
+if ~isfield(opt, 'warn_tracker_errors'), opt.warn_tracker_errors = true; end;
+if ~isfield(opt, 'plot_result'), opt.plot_result = 'show'; end;
 
-if ~isempty(opt.out_dir)
-  if ~exist(opt.out_dir, 'dir')
-    warning('TrackerBenchmark:Generic', ...
-      ['output directory (' opt.out_dir ') does not exist - creating.']);
-    mkdir(opt.out_dir);
-  end
-elseif opt.result_img_dump
+if any(strcmpi(opt.plot_result, {'none', 'dump', 'show'})) == false
   warning('TrackerBenchmark:InvalidOption', ...
-    'result_img_dump is set but out_dir is empty - turning off result_img_dump.');
-  opt.result_img_dump = false;
+    ['invalid plot_result (' opt.plot_result ') - setting plot_result to "none".']);
+  opt.plot_result = 'none';
+end
+if ~isempty(opt.result_dir)
+  if ~exist(opt.result_dir, 'dir')
+    warning('TrackerBenchmark:Generic', ...
+      ['result directory (' opt.result_dir ') does not exist - creating.']);
+    mkdir(opt.result_dir);
+  end
+  if ~exist([opt.result_dir '/' test_name], 'dir')
+    mkdir([opt.result_dir '/' test_name]);
+  end
+elseif strcmpi(opt.plot_result, 'dump')
+  warning('TrackerBenchmark:InvalidOption', ...
+    'plot_result is set to "dump" but result_dir is empty - setting plot_result to "show".');
+  opt.plot_result = 'show';
 end
 
-num_sequences = numel(sequences);
+if strcmp(trackers, '*'), trackers = fieldnames(TRACKER_DIRS); end;
+if ~iscell(trackers), trackers = {trackers}; end;
 num_trackers = numel(trackers);
 
-seqs = cell(num_sequences, 1);
-for seq_idx = 1:num_sequences
-  seq = LoadSequenceConfig(sequences{seq_idx}, opt);
-  seqs{seq_idx} = seq;
-end
+seqs = LoadSequenceConfig(sequences, opt);
+num_sequences = numel(seqs);
 
-results = cell(num_trackers, num_sequences);
+all_results = cell(num_trackers, num_sequences);
 
-for tracker_idx = 1:num_trackers
-  tracker_name = trackers{tracker_idx};
-  addpath([opt.tracker_dir '/' tracker_name]);
+%- Run all trackers for each sequence.
+for seq_idx = 1:numel(seqs)
+  seq = seqs(seq_idx);
+  seq_name = seq.name;
   
-  for seq_idx = 1:num_sequences
-    seq = seqs{seq_idx};
-    disp([sprintf('[t%d/%d,s%d/%d] ', ...
-                  tracker_idx, num_trackers, seq_idx, num_sequences), ...
-      'running ' tracker_name ' on ' seq.name ' (' ...
-      num2str(numel(seq.img_range)) ' frames)...']);
+  test_cfgs = SetupTestConfigs(opt.test_type, seq, opt);
+  num_test_cfgs = numel(test_cfgs);
+  
+  results = cell(size(test_cfgs));
+  for tracker_idx = 1:num_trackers
+    tracker_name = trackers{tracker_idx};
     
-    dumppath_fmt = '';
-    if opt.result_img_dump
-      dumppath_dir = [opt.out_dir '/' test_name '/' tracker_name '/' seq.name '/'];
-      if ~exist(dumppath_dir, 'dir'), mkdir(dumppath_dir); end;
-      dumppath_fmt = [dumppath_dir '%04d.png'];
+    dir_name = tracker_name;
+    if isfield(TRACKER_DIRS, tracker_name)
+      dir_name = TRACKER_DIRS.(tracker_name);
     end
-    start_time = clock;
     
-%     try
-      result = feval(['Run_' tracker_name], ...
-        seq.imgfilepath_fmt, seq.img_range, seq.init_rect, dumppath_fmt);
-%     catch err
-%       warning('TrackerBenchmark:TrackerError', ...
-%         ['tracker error (' tracker_name ',' seq.name ') - \n  ', ...
-%         err.identifier ': ' err.message]);
-%       result = struct('error', err);
-%     end
+    run_opt = opt;
+    run_opt.tracker_dir = [opt.tracker_dir '/' dir_name '/'];
     
-    result.tracker = tracker_name;
-    result.seq_name = seq.name;
-    result.seq_range_str = seq.range_str;
-    result.start_time = start_time;
-    result.end_time = clock;
-    results{tracker_idx, seq_idx} = result;
+    addpath(run_opt.tracker_dir);
+    
+    for test_idx = 1:num_test_cfgs
+      test_cfg = test_cfgs(test_idx);
+      
+      disp([sprintf('[%d/%d,t%d/%d,s%d/%d] ', test_idx, num_test_cfgs, ...
+        tracker_idx, num_trackers, seq_idx, num_sequences), ...
+        'running ' tracker_name ' on ' seq_name ' (' ...
+        test_cfg.img_range_str ' frames)...']);
+      
+      run_opt.test_cfg = test_cfg;
+      run_opt.dump_dir = [opt.result_dir '/' test_name '/' tracker_name '/' seq_name];
+      if num_test_cfgs > 1
+        run_opt.dump_dir = sprintf('%s.%02d', run_opt.dump_dir, test_idx);
+      end
+      run_opt.dumppath_fmt = '';
+      if strcmpi(opt.plot_result, 'dump')
+        if ~exist(run_opt.dump_dir, 'dir'), mkdir(run_opt.dump_dir); end;
+        run_opt.dumppath_fmt = [run_opt.dump_dir '/%04d.png'];
+      elseif strcmpi(opt.plot_result, 'show')
+        run_opt.dumppath_fmt = '-';
+      end
+      start_time = clock;
+    
+      if ~opt.warn_tracker_errors
+        result = feval(['Run_' tracker_name], ...
+          seq.img_filepath_fmt, test_cfg.img_range_str, test_cfg.init_rect, run_opt);
+      else
+        try  %- Catch tracker errors and warn them (tracker continues).
+          result = feval(['Run_' tracker_name], ...
+              seq.img_filepath_fmt, test_cfg.img_range_str, test_cfg.init_rect, run_opt);
+        catch err
+            warning('TrackerBenchmark:TrackerError', ...
+                ['tracker error (' tracker_name ',' seq_name ') - \n  ', ...
+                err.identifier ': ' err.message]);
+            result = struct('error', err);
+        end
+      end
+      result.tracker = tracker_name;
+      result.seq_name = seq_name;
+      result.seq_range_str = test_cfg.img_range_str;
+      result.tmplsize = test_cfg.init_rect(3:4);
+      result.start_time = start_time;
+      result.end_time = clock;
+      
+      results{test_idx} = result;
+    end
+    rmpath(run_opt.tracker_dir);
+    
+    if ~isempty(opt.result_dir)
+      result_mat_path = [opt.result_dir '/' test_name '/' ...
+                         seq_name '_' tracker_name '.mat'];
+      save(result_mat_path, 'test_name', 'results', 'opt');
+    end
+    all_results{tracker_idx, seq_idx} = results;
   end
-  rmpath([opt.tracker_dir '/' tracker_name]);
+end
+results = all_results;
 end
 
-if ~isempty(opt.out_dir)
-  result_mat_path = [opt.out_dir, '/', test_name, '.mat'];
-  save(result_mat_path, 'test_name', 'results', 'opt');
+
+function test_cfgs = SetupTestConfigs(test_type, seq, opt)
+%- Find the basic sequence info.
+tok = regexp(seq.img_filepath_fmt, ...
+  [opt.data_dir '[/\\]*([^/\\]*).*\.([^\.]*)'], 'tokens');
+test.seq_name = tok{1}{1};  %- Sequence dir.
+test.ext = tok{1}{2};  %- File extension.
+
+tok = regexp(seq.img_filepath_fmt, '(.*)[/\\]([^\\]*)', 'tokens');
+test.img_dir = tok{1}{1};  %- Full directory.
+test.img_file_fmt = tok{1}{2};  %- File name (printf format).
+
+% tok = regexp(img_range_str, '([^:]*):([^:]*):?([^:]*)?', 'tokens');
+tok = regexp(seq.img_range_str, '([^:]*):([^:]*)', 'tokens');
+test.img_start = str2double(tok{1}{1});
+test.img_end = str2double(tok{1}{2});
+  
+%- Find the frames with gt_rect.
+img_range = eval(seq.img_range_str);
+gt_rect_range = eval(seq.gt_rect_range_str);
+[~, img_idx, gt_rect_idx] = intersect(img_range, gt_rect_range);
+
+%- Setup the test
+test.img_start = img_range(img_idx(1));
+test.img_range_str = sprintf('%d:%d', test.img_start, test.img_end);
+test.init_rect = seq.gt_rect(gt_rect_idx(1), :);
+
+if strcmpi(test_type, 'SRE')
+  [x, y] = deal(test.init_rect(1), test.init_rect(2));
+  [w, h] = deal(test.init_rect(3), test.init_rect(4));
+  init_rects = repmat(test.init_rect, [13, 1]);
+  init_rects(1 + 3 * (0:2), 1) = round(x - 0.1 * w);
+  init_rects(3 + 3 * (0:2), 1) = round(x + 0.1 * w);
+  init_rects((1:3) + 0, 2) = round(y - 0.1 * h);
+  init_rects((1:3) + 6, 2) = round(y + 0.1 * h);
+  init_rects(10, 3:4) = round([w, h] * 0.8);
+  init_rects(11, 3:4) = round([w, h] * 0.9);
+  init_rects(12, 3:4) = round([w, h] * 1.1);
+  init_rects(13, 3:4) = round([w, h] * 1.2);
+  test_cfgs = repmat(test, [1, 13]);
+  for i = 1:13
+    test_cfgs(i).init_rect = init_rects(i, :);
+  end
+elseif strcmpi(test_type, 'TRE')
+  test_cfgs = repmat(test, [1, 10]);
+  num_frames = numel(img_idx);
+  for i = 1:10
+    test_cfgs(i).img_start = img_idx(round((i - 1) / 10 * num_frames) + 1);
+    test_cfgs(i).img_range_str = ...
+      sprintf('%d:%d', test_cfgs(i).img_start, test_cfgs(i).img_end);
+  end
+else
+  test_cfgs = test;
 end
 end
-
-%   cfg = struct('name', name, 'imgfilename_fmt', imgfilename_fmt, 'range_str', range_str);
-%   frames = eval(seq.range_str);
-%   for idx = 1:numel(frames)
-%     img_path = sprintf(seq.imgfilenam_fmt, frames(idx));
-%     img = imread(img_path);
-%     
-%     
-%     
-%     numSeg = 20;
-%     [subSeqs, subAnno]=splitSeqTRE(s,numSeg,rect_anno);
-%     rect_anno = subAnno{1};
-%     s.init_rect = rect_anno(1,:);
-%     
-%     for idxTrk=1:numTrk
-%       t = trackers{idxTrk};
-%       results = [];
-%       switch t.name
-%         case {'VTD','VTS'}
-%           continue;
-%       end
-%       disp([num2str(idxSeq) ':' s.name ' ' num2str(idxTrk) ':' t.name]);
-%       
-%       rp = [res_path s.name '_' t.name '\'];
-%       
-%       if bSaveImage&~exist(rp,'dir')
-%         mkdir(rp);
-%       end
-%       
-%       funcName = ['res=run_' t.name '(s, rp, bSaveImage);'];
-%       try
-%         switch t.name
-%           case {'VR','TM','RS','PD','MS'}
-%           otherwise
-%             cd(['./trackers/' t.name]);
-%             addpath(genpath('./'))
-%         end
-%         
-%         eval(funcName);
-%         
-%         switch t.name
-%           case {'VR','TM','RS','PD','MS'}
-%           otherwise
-%             rmpath(genpath('./'))
-%             cd('../../');
-%         end
-%         
-%         if isempty(res)
-%           results = [];
-%           break;
-%         end
-%       catch err
-%         disp('error');
-%         rmpath(genpath('./'))
-%         cd('../../');
-%         res=[];
-%         continue;
-%       end
-%       res.len = s.len;
-%       %         res.annoBegin = s.annoBegin;
-%       res.startFrame = s.startFrame;
-%       res.anno = rect_anno;
-%       
-%       results = res;
-%       
-%       save([finalPath s.name '_' t.name '.mat'], 'results');
-%     end
-%   end
-%   % fclose(fid);
-%   t=clock;
-%   t=uint8(t(2:end));
-%   disp([num2str(t(1)) '/' num2str(t(2)) ' ' num2str(t(3)) ':' num2str(t(4)) ':' num2str(t(5))]);
-%   
-
-% 
-% % Prepare output directory.
-% shift_set =  { 'left', 'right', 'up', 'down', 'topLeft', 'topRight', ...
-%   'bottomLeft', 'bottomRight', 'scale_8', 'scale_9', 'scale_11', 'scale_12'};
-% 
-% for seq_idx = 1:numel(sequences)
-%   seq = sequences{seq_idx};
-% cfg = struct('name', name, 'imgfilename_fmt', imgfilename_fmt, 'range_str', range_str);
-%   frames = eval(seq.range_str);
-%   for idx = 1:numel(frames)
-%     img_path = sprintf(seq.imgfilenam_fmt, frames(idx));
-%     img = imread(img_path);
-%     
-%     
-%     
-%     numSeg = 20;    
-%     [subSeqs, subAnno]=splitSeqTRE(s,numSeg,rect_anno);
-%     rect_anno = subAnno{1};
-%     s.init_rect = rect_anno(1,:);
-%     
-%     for idxTrk=1:numTrk
-%         t = trackers{idxTrk};
-%         results = [];
-%         switch t.name
-%             case {'VTD','VTS'}
-%                 continue;
-%         end
-%         disp([num2str(idxSeq) ':' s.name ' ' num2str(idxTrk) ':' t.name]);
-%         
-%         rp = [res_path s.name '_' t.name '\'];
-%         
-%         if bSaveImage&~exist(rp,'dir')
-%             mkdir(rp);
-%         end
-%         
-%         funcName = ['res=run_' t.name '(s, rp, bSaveImage);'];
-%         try
-%             switch t.name
-%                 case {'VR','TM','RS','PD','MS'}
-%                 otherwise
-%                     cd(['./trackers/' t.name]);
-%                     addpath(genpath('./'))
-%             end
-%             
-%             eval(funcName);
-%             
-%             switch t.name
-%                 case {'VR','TM','RS','PD','MS'}
-%                 otherwise
-%                     rmpath(genpath('./'))
-%                     cd('../../');
-%             end
-%             
-%             if isempty(res)
-%                 results = [];
-%                 break;
-%             end
-%         catch err
-%             disp('error');
-%             rmpath(genpath('./'))
-%             cd('../../');
-%             res=[];
-%             continue;
-%         end
-%         res.len = s.len;
-%         %         res.annoBegin = s.annoBegin;
-%         res.startFrame = s.startFrame;
-%         res.anno = rect_anno;
-%         
-%         results = res;
-%         
-%         save([finalPath s.name '_' t.name '.mat'], 'results');
-%     end
-% end
-% % fclose(fid);
-% t=clock;
-% t=uint8(t(2:end));
-% disp([num2str(t(1)) '/' num2str(t(2)) ' ' num2str(t(3)) ':' num2str(t(4)) ':' num2str(t(5))]);
-% 
-% 
-% 
-%     s.len = s.endFrame - s.startFrame + 1;
-%   s.s_frames = cell(s.len,1);
-%   nz	= strcat('%0',num2str(s.nz),'d'); %number of zeros in the name of image
-%   for i=1:s.len
-%     image_no = s.startFrame + (i-1);
-%     id = sprintf(nz,image_no);
-%     s.s_frames{i} = strcat(s.path,id,'.',s.ext);
-%   end
-%   
-%     
-%     results = [];
-%     for idxShift=1:12
-%       shiftType = shiftTypeSet{idxShift};
-%       disp([num2str(idxTrk) '_' t.name ', ' num2str(idxSeq) '_' s.name ': ' num2str(idxShift) '/' num2str(length(shiftTypeSet))])
-%       
-%       subS = subSeqs{1};
-%       r=subS.init_rect;
-%       
-%       r=shiftInitBB(r,shiftType,imgH,imgW);
-%       
-%       subS.init_rect = r;
-%       
-%       rp = [res_path s.name '_' t.name '_' shiftType '\'];
-%       if bSaveImage&~exist(rp,'dir')
-%         mkdir(rp);
-%       end
-%       
-%       subS.name = [subS.name '_' num2str(idxShift)];
-%       subS.s_frames = subS.s_frames(1:20);
-%       subS.len=20;
-%       subS.endFrame=20;
-%       funcName = ['res=run_' t.name '(subS, rp, bSaveImage);'];
-%       
-%       try
-%         switch t.name
-%           case {'VR','TM','RS','PD','MS'}
-%           otherwise
-%             cd(['./trackers/' t.name]);
-%             addpath(genpath('./'))
-%         end
-%         
-%         eval(funcName);
-%         
-%         switch t.name
-%           case {'VR','TM','RS','PD','MS'}
-%           otherwise
-%             rmpath(genpath('./'))
-%             cd('../../');
-%         end
-%         
-%         if isempty(res)
-%           results = [];
-%           break;
-%         end
-%       catch err
-%         disp('error');
-%         rmpath(genpath('./'))
-%         cd('../../');
-%         res=[];
-%         continue;
-%       end
-%       
-%       res.len = subS.len;
-%       res.annoBegin = subS.annoBegin;
-%       res.startFrame = subS.startFrame;
-%       res.anno = subAnno{1};
-%       res.shiftType = shiftType;
-%       
-%       results{idxShift} = res;
-%       
-%     end
-%     save([finalPath s.name '_' t.name '.mat'], 'results');
-%   end
-% end
-% % fclose(fid);
-% figure
-% t=clock;
-% t=uint8(t(2:end));
-% disp([num2str(t(1)) '/' num2str(t(2)) ' ' num2str(t(3)) ':' num2str(t(4)) ':' num2str(t(5))]);
-% 
