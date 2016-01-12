@@ -4,7 +4,7 @@ Usage
 - (e.g : python run_trackers.py -t IVT -e OPE)
 
 Libraries
-- Matlab Engine for python (for execute matlab)
+- Matlab Engine for python
     http://kr.mathworks.com/help/matlab/matlab-engine-for-python.html
 - matplotlib
 - numpy
