@@ -1,7 +1,6 @@
 from config import *
-from trackers import *
 
-def run_IVT(seq, rp, bSaveImage):
+def run_TLD(seq, rp, bSaveImage):
     global m
     if m == None:
         print 'Starting matlab engine...'
@@ -11,7 +10,7 @@ def run_IVT(seq, rp, bSaveImage):
     m.workspace['subS'] = seq.__dict__
     m.workspace['rp'] = os.path.abspath(rp)
     m.workspace['bSaveImage'] = bSaveImage
-    func = 'run_IVT(subS, rp, bSaveImage);'
+    func = 'run_TLD(subS, rp, bSaveImage);'
     res = m.eval(func, nargout=1)
     # m.quit()
     return res
