@@ -1,6 +1,6 @@
 
 Usage
-- command : python run_trackers.py -t <tracker> -e <evalType>
+- command : python run_trackers.py -t "tracker" -e "evaltype"
 - (e.g : python run_trackers.py -t IVT -e OPE)
 
 Libraries
