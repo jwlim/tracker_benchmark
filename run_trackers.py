@@ -1,3 +1,4 @@
+import getopt
 import numpy as np
 from PIL import Image
 from config import *
@@ -5,36 +6,46 @@ from model.result import Result
 from model.sequence import Sequence
 from model.attribute import Attribute
 import butil
+from trackers import *
 
-def main():
-    print 'Starting matlab engine ...'
-    m = matlab.engine.start_matlab()
-    init_path(m)
+def main(argv):
+    
+    try:
+        opts, args = getopt.getopt(argv, "ht:e:",["tracker=","evaltype="])
+    except getopt.GetoptError:
+        print 'usage : run_trackers.py -t <tracker> -e <evaltype>'
+        sys.exit(1)
+
+    for opt, arg in opts:
+        if opt == '-h':
+            print 'usage : run_trackers.py -t <tracker> -e <evaltype>'
+            sys.exit(0)
+        elif opt in ("-t", "--tracker"):
+            # trackers = [x.strip() for x in arg.split(',')]
+            trackers = [arg]
+        elif opt in ("-e", "--evaltype"):
+            # evalTypes = [x.strip() for x in arg.split(',')]
+            evalTypes = [arg]
 
     if SETUP_SEQ:
         print 'Setup sequences ...'
         butil.setup_seqs()
 
-    m.vl_setup(nargout=0)
-    # inputs = raw_input("Input Trakcer names (','): ")
-    # trackers = [x.strip() for x in inputs.split(',')] 
-    trackers = os.listdir(TRACKER_SRC)
     shiftTypeSet = ['left','right','up','down','topLeft','topRight',
         'bottomLeft', 'bottomRight','scale_8','scale_9','scale_11','scale_12']
-    evalTypes = ['OPE', 'SRE', 'TRE']
 
     for evalType in evalTypes:
         seqs = butil.load_all_seq_configs()
-        
-        trackerResults = run_trackers(m, trackers, seqs, evalType, shiftTypeSet)
+        trackerResults = run_trackers(
+            trackers, seqs, evalType, shiftTypeSet)
 
         seqNames = [s.name for s in seqs]
         for tracker in trackers:
             results = trackerResults[tracker]
             if len(results) > 0:
-                evalResults, attrList = butil.calc_result(m, tracker,
+                evalResults, attrList = butil.calc_result(tracker,
                     seqs, results, evalType)
-                print "Result of Sequences\t'{0}'".format(tracker)
+                print "Result of Sequences\t -- '{0}'".format(tracker)
                 for seq in seqs:
                     try:
                         print '\t\'{0}\'{1}'.format(
@@ -46,7 +57,7 @@ def main():
                     except:
                         print '\t\'{0}\'  ERROR!!'.format(seq.name)
 
-                print "Result of attributes"
+                print "Result of attributes\t -- '{0}'".format(tracker)
                 for attr in attrList:
                     print "\t\'{0}\'".format(attr.name),
                     print "\toverlap : {0:02.1f}%".format(attr.overlap),
@@ -56,9 +67,7 @@ def main():
                     butil.save_results(tracker, evalResults, attrList, 
                         seqNames, evalType)
 
-    m.quit()
-
-def run_trackers(m, trackers, seqs, evalType, shiftTypeSet):
+def run_trackers(trackers, seqs, evalType, shiftTypeSet):
     tmpRes_path = BENCHMARK_SRC + 'tmp/{0}/'.format(evalType)
     if not os.path.exists(tmpRes_path):
         os.makedirs(tmpRes_path)
@@ -79,9 +88,8 @@ def run_trackers(m, trackers, seqs, evalType, shiftTypeSet):
         
         rect_anno = s.gtRect
         numSeg = 20.0
-        subSeqs, subAnno = butil.split_seq_TRE(s, numSeg, rect_anno)            
+        subSeqs, subAnno = butil.split_seq_TRE(s, numSeg, rect_anno)
         s.subAnno = subAnno
-
         img = Image.open(s.s_frames[0])
         (imgWidth, imgHeight) = img.size
 
@@ -108,27 +116,27 @@ def run_trackers(m, trackers, seqs, evalType, shiftTypeSet):
                 subSeqs[i].shiftType = shiftType
                 subAnno.append(subA)
 
-        elif evalType == 'TRE' :
-            map(matlab.double, [s.init_rect for s in subSeqs])
-
         for idxTrk in range(len(trackers)):         
             t = trackers[idxTrk]
+            if not os.path.exists(TRACKER_SRC + t):
+                print '{0} does not exists'.format(t)
+                sys.exit(1)
             seqResults = []
             seqLen = len(subSeqs)
             for idx in range(seqLen):
-                print '{0}_{1}, {2}_{3}:{4}/{5}'.format(
-                    idxTrk + 1, t, idxSeq + 1, s.name, idx + 1, seqLen)
+                print '{0}_{1}, {2}_{3}:{4}/{5} - {6}'.format(
+                    idxTrk + 1, t, idxSeq + 1, s.name, idx + 1, seqLen, \
+                    evalType)
                 rp = tmpRes_path + '_' + t + '_' + str(idx+1) + '/'
                 if SAVE_IMAGE and not os.path.exists(rp):
                     os.makedirs(rp)
                 subS = subSeqs[idx]
                 subS.name = s.name + '_' + str(idx)
-                subS.init_rect = matlab.double(subS.init_rect)
-                m.workspace['subS'] = subS.__dict__
-                m.workspace['rp'] = os.path.abspath(rp)
-                m.workspace['bSaveImage'] = SAVE_IMAGE
-                funcName = 'run_{0}(subS, rp, bSaveImage);'.format(t)                       
-                res = m.eval(funcName, nargout=1)
+
+                os.chdir(TRACKER_SRC + t)
+                funcName = 'run_{0}(subS, rp, SAVE_IMAGE)'.format(t)
+                res = eval(funcName)
+                os.chdir(WORKDIR)
                 res['seq_name'] = s.name
                 res['len'] = subS.len
                 res['annoBegin'] = subS.annoBegin
@@ -136,13 +144,13 @@ def run_trackers(m, trackers, seqs, evalType, shiftTypeSet):
 
                 if evalType == 'SRE':
                     res['shiftType'] = shiftTypeSet[idx]
-                seqResults.append(res)          
+                seqResults.append(res)
             #end for subseqs
+
             trackerResults[t].append(seqResults)
         #end for tracker
     #end for allseqs
     return trackerResults
 
-		
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])

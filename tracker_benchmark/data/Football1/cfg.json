@@ -8,6 +8,8 @@
     "OPR", 
     "BC"
   ], 
+  "nz": 4, 
+  "ext": "jpg", 
   "imgFormat": "{0:04d}.jpg", 
   "init_rect": [
     0, 
