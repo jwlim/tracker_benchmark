@@ -1,0 +1,11 @@
+IV	Illumination Variation - the illumination in the target region is significantly changed.
+SV	Scale Variation - the ratio of the bounding boxes of the first frame and the current frame is out of the range ts, ts > 1 (ts=2).
+OCC	Occlusion - the target is partially or fully occluded.
+DEF	Deformation - non-rigid object deformation.
+MB	Motion Blur - the target region is blurred due to the motion of target or camera.
+FM	Fast Motion - the motion of the ground truth is larger than tm pixels (tm=20).
+IPR	In-Plane Rotation - the target rotates in the image plane.
+OPR	Out-of-Plane Rotation - the target rotates out of the image plane.
+OV	Out-of-View - some portion of the target leaves the view.
+BC	Background Clutters - the background near the target has the similar color or texture as the target.
+LR	Low Resolution - the number of pixels inside the ground-truth bounding box is less than tr (tr =400).
