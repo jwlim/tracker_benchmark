@@ -135,7 +135,11 @@ def run_trackers(trackers, seqs, evalType, shiftTypeSet):
 
                 os.chdir(TRACKER_SRC + t)
                 funcName = 'run_{0}(subS, rp, SAVE_IMAGE)'.format(t)
-                res = eval(funcName)
+                try:
+                    res = eval(funcName)
+                except:
+                    print 'failed to execute '+ t
+                    sys.exit(1)
                 os.chdir(WORKDIR)
                 res['seq_name'] = s.name
                 res['len'] = subS.len

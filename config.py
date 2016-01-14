@@ -2,8 +2,11 @@
 import json
 import sys
 import os
-import matlab
-import matlab.engine
+try:
+    import matlab
+    import matlab.engine
+except:
+    pass
 
 ############### benchmark config ####################
 
