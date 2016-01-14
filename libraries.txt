@@ -1,7 +1,0 @@
-Libraries
-
-1. Matlab Engine for python - http://kr.mathworks.com/help/matlab/matlab-engine-for-python.html
-2. matplotlib
-3. numpy
-4. Python Imaging Library (PIL) - http://www.pythonware.com/products/pil/
-
