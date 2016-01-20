@@ -27,11 +27,13 @@ VLFEAT_SRC = os.path.abspath('./vlfeat-0.9.20/toolbox')
 
 SETUP_SEQ = True
 
-SAVE_RESULT = True
+SAVE_RESULT = False
 
 SAVE_IMAGE = False
 
 # sequence configs
+DOWNLOAD_SEQS = True
+DOWNLOAD_URL = "http://cvlab.hanyang.ac.kr/tracker_benchmark/seq/{0}.zip"
 GT_FILE = 'groundtruth_rect.txt'
 
 # for eval results
