@@ -32,7 +32,7 @@ SAVE_RESULT = False
 SAVE_IMAGE = False
 
 # sequence configs
-DOWNLOAD_SEQS = True
+DOWNLOAD_SEQS = False
 DOWNLOAD_URL = "http://cvlab.hanyang.ac.kr/tracker_benchmark/seq/{0}.zip"
 GT_FILE = 'groundtruth_rect.txt'
 
