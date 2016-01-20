@@ -1,8 +1,12 @@
 
 Usage
-- command : python run_trackers.py -t "tracker" -e "evaltype"
+- Default (for all trackers, all sequences, all evaltypes(OPE, SRE, TRE))
+    - command : python run_trackers.py
 
-    (e.g : python run_trackers.py -t IVT -e OPE)
+- For specific trackers, sequences, evaltypes    
+    - command : python run_trackers.py -t "tracker" -s "sequence" -e "evaltype"
+    - e.g : python run_trackers.py -t IVT,TLD -s Couple,Crossing -e OPE,SRE)
+    
 
 Libraries
 - Matlab Engine for python

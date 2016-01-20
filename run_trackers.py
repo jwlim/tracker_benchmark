@@ -10,22 +10,31 @@ from trackers import *
 
 def main(argv):
     
+    trackers = os.listdir(TRACKER_SRC)
+    evalTypes = ['OPE', 'SRE', 'TRE']
+    loadSeqs = 'ALL'
+    seqs = []
     try:
-        opts, args = getopt.getopt(argv, "ht:e:",["tracker=","evaltype="])
+        opts, args = getopt.getopt(argv, "ht:e:s:",["tracker=","evaltype="
+            ,"sequence="])
     except getopt.GetoptError:
-        print 'usage : run_trackers.py -t <tracker> -e <evaltype>'
+        print 'usage : run_trackers.py -t <trackers> -s <sequences>' \
+            + '-e <evaltypes>'
         sys.exit(1)
 
     for opt, arg in opts:
         if opt == '-h':
-            print 'usage : run_trackers.py -t <tracker> -e <evaltype>'
+            print 'usage : run_trackers.py -t <trackers> -s <sequences>' \
+                + '-e <evaltypes>'
             sys.exit(0)
         elif opt in ("-t", "--tracker"):
-            # trackers = [x.strip() for x in arg.split(',')]
-            trackers = [arg]
+            trackers = [x.strip() for x in arg.split(',')]
+            # trackers = [arg]
+        elif opt in ("-s", "--sequence"):
+            loadSeqs = [x.strip() for x in arg.split(',')]
         elif opt in ("-e", "--evaltype"):
-            # evalTypes = [x.strip() for x in arg.split(',')]
-            evalTypes = [arg]
+            evalTypes = [x.strip() for x in arg.split(',')]
+            # evalTypes = [arg]
 
     if SETUP_SEQ:
         print 'Setup sequences ...'
@@ -34,8 +43,20 @@ def main(argv):
     shiftTypeSet = ['left','right','up','down','topLeft','topRight',
         'bottomLeft', 'bottomRight','scale_8','scale_9','scale_11','scale_12']
 
+    print 'Starting benchmark for {0} trackers, evalTypes : {1}'.format(
+        len(trackers), evalTypes)
+
     for evalType in evalTypes:
-        seqs = butil.load_all_seq_configs()
+        if loadSeqs == 'ALL':
+            seqs = butil.load_all_seq_configs()
+        else:
+            for seqName in loadSeqs:
+                try:
+                    seq = butil.load_seq_config(seqName)
+                    seqs.append(seq)
+                except:
+                    print 'Cannot load sequence \'{0}\''.format(seqName)
+                    sys.exit(1)
         trackerResults = run_trackers(
             trackers, seqs, evalType, shiftTypeSet)
         seqNames = [s.name for s in seqs]
