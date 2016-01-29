@@ -6,7 +6,7 @@ Usage
 - For specific trackers, sequences, evaltypes    
     - command : python run_trackers.py -t "tracker" -s "sequence" -e "evaltype"
     - e.g : python run_trackers.py -t IVT,TLD -s Couple,Crossing -e OPE,SRE)
-    
+
 
 Libraries
 - Matlab Engine for python

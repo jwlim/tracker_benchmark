@@ -146,6 +146,20 @@ def download_sequence(seqName):
         shutil.move(src + 'groundtruth_rect.2.txt', dst2 + GT_FILE)
         shutil.rmtree(src)
 
+    elif seqName == 'Human4-1' or seqName == 'Human4-2':
+        url = DOWNLOAD_URL.format('Human4')
+        download_and_extract_file(url, file_name, SEQ_SRC)
+        src = SEQ_SRC + 'Human4/'
+        dst1 = SEQ_SRC + 'Human4-1/'
+        dst2 = SEQ_SRC + 'Human4-2/'
+        if not os.path.exists(dst1 + 'img'):
+            shutil.copytree(src + 'img', dst1 + 'img')
+        if not os.path.exists(dst2 + 'img'):
+            shutil.copytree(src + 'img', dst2 + 'img')
+        shutil.move(src + 'groundtruth_rect.1.txt', dst1 + GT_FILE)
+        shutil.move(src + 'groundtruth_rect.2.txt', dst2 + GT_FILE)
+        shutil.rmtree(src)
+
     else:
         url = DOWNLOAD_URL.format(seqName)
         download_and_extract_file(url, file_name, SEQ_SRC)
