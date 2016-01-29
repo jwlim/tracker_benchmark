@@ -38,7 +38,7 @@ def main(argv):
 
     if SETUP_SEQ:
         print 'Setup sequences ...'
-        butil.setup_seqs()
+        butil.setup_seqs(loadSeqs)
 
     shiftTypeSet = ['left','right','up','down','topLeft','topRight',
         'bottomLeft', 'bottomRight','scale_8','scale_9','scale_11','scale_12']
