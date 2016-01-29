@@ -142,7 +142,7 @@ def download_sequence(seqName):
         shutil.rmtree(src)
 
     elif seqName == 'Skating2-1' or seqName == 'Skating2-2':
-        url = DOWNLOAD_URL.format('Skating2')
+        url = DOWNLOAD_URL2.format('Skating2')
         download_and_extract_file(url, file_name, SEQ_SRC)
         src = SEQ_SRC + 'Skating2/'
         dst1 = SEQ_SRC + 'Skating2-1/'
@@ -156,7 +156,7 @@ def download_sequence(seqName):
         shutil.rmtree(src)
 
     elif seqName == 'Human4-1' or seqName == 'Human4-2':
-        url = DOWNLOAD_URL.format('Human4')
+        url = DOWNLOAD_URL2.format('Human4')
         download_and_extract_file(url, file_name, SEQ_SRC)
         src = SEQ_SRC + 'Human4/'
         dst1 = SEQ_SRC + 'Human4-1/'
@@ -170,21 +170,25 @@ def download_sequence(seqName):
         shutil.rmtree(src)
 
     else:
-        url = DOWNLOAD_URL.format(seqName)
-        download_and_extract_file(url, file_name, SEQ_SRC)
+        try:
+            url = DOWNLOAD_URL.format(seqName)
+            download_and_extract_file(url, file_name, SEQ_SRC)
+        except:
+            try:
+                url2 = DOWNLOAD_URL2.format(seqName)
+                download_and_extract_file(url2, file_name, SEQ_SRC)
+            except:
+                print 'Cannot download {0} : {1}'.format(
+                    url.split('/')[-1], sys.exc_info()[1])
+                sys.exit(1)
+                
 
     if os.path.exists(SEQ_SRC + '__MACOSX'):
         shutil.rmtree(SEQ_SRC + '__MACOSX')
 
-
 def download_and_extract_file(url, dst, ext_dst):  
-    try:
-        print 'Connecting to {0} ...'.format(url)
-        u = urllib2.urlopen(url)
-    except:
-        print 'Cannot download {0} : {1}'.format(
-            url.split('/')[-1], sys.exc_info()[1])
-        sys.exit(1)
+    print 'Connecting to {0} ...'.format(url)
+    u = urllib2.urlopen(url)
     f = open(dst, 'wb')
     meta = u.info()
     file_size = int(meta.getheaders("Content-Length")[0])

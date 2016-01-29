@@ -27,7 +27,8 @@ SAVE_IMAGE = False
 
 # sequence configs
 DOWNLOAD_SEQS = True
-DOWNLOAD_URL = "http://cvlab.hanyang.ac.kr/tracker_benchmark/seq/{0}.zip"
+DOWNLOAD_URL = "http://cvlab.hanyang.ac.kr/tracker_benchmark/seq_new/{0}.zip"
+DOWNLOAD_URL2 = "http://cvlab.hanyang.ac.kr/tracker_benchmark/seq/{0}.zip"
 ATTR_LIST_FILE = 'attr_list.txt'
 ATTR_DESC_FILE = 'attr_desc.txt'
 ATTR_FILE = 'attrs.txt'
