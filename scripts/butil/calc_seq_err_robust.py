@@ -1,5 +1,6 @@
-import butil
 import math
+from scripts import *
+import scripts.butil
 
 def calc_seq_err_robust(results, rect_anno):
     seq_length = int(results['len'])
@@ -13,41 +14,41 @@ def calc_seq_err_robust(results, rect_anno):
         rectMat = res
     elif resultType == 'ivtAff':
         for i in range(seq_length):
-            # rect, c, corn = butil.calc_rect_center(results['tmplsize'], res[i])
-            rect = butil.rect_affine_IVT(results['tmplsize'][0], res[i])
+            # rect, c, corn = scripts.butil.calc_rect_center(results['tmplsize'], res[i])
+            rect = scripts.butil.rect_affine_IVT(results['tmplsize'][0], res[i])
             rectMat[i] = rect
     elif resultType == 'L1Aff':
         for i in range(seq_length):
-            # rect, c = butil.calc_center_L1(res[i], results['tmplsize'])
-            rect = butil.rect_affine_L1(results['tmplsize'][0], res[i])
+            # rect, c = scripts.butil.calc_center_L1(res[i], results['tmplsize'])
+            rect = scripts.butil.rect_affine_L1(results['tmplsize'][0], res[i])
             rectMat[i] = rect
     elif resultType == 'LK_Aff':
         for i in range(seq_length):
-            rect = butil.rect_affine_LK(results['tmplsize'][0], 
+            rect = scripts.butil.rect_affine_LK(results['tmplsize'][0], 
                 res[2*i:2*(i+1)])
             rectMat[i] = rect
     elif resultType == '4corner':
         for i in range(seq_length):
             # corner = res[2*i:2*(i+1)]
-            # rectMat[i] = butil.d_to_f(m.corenr2rect(corner, nargout=1)[0])
-            rect = butil.rect_4corners(res[2*i:2*(i+1)])
+            # rectMat[i] = scripts.butil.d_to_f(m.corenr2rect(corner, nargout=1)[0])
+            rect = scripts.butil.rect_4corners(res[2*i:2*(i+1)])
             rectMat[i] = rect
     elif resultType == 'affine':
         for i in range(seq_length):
-            rect = butil.rect_4corners(res[2*i:2*(i+1)])
+            rect = scripts.butil.rect_4corners(res[2*i:2*(i+1)])
             rectMat[i] = rect
     elif resultType == 'SIMILARITY':
         for i in range(seq_length):
-            rect = butil.rect_similarity(results['tmplsize'][0], res[i])
+            rect = scripts.butil.rect_similarity(results['tmplsize'][0], res[i])
             rectMat[i] = rect
             # wapr_p = m.parameters_to_projective_matrix(resultType, res[i],
             #     nargout=1)
             # corenr, c = m.getLKcorner(wapr_p, results['tmplsize'], nargout=2)
-            # rectMat[i] = butil.do_to_f(m.corner2rect(corner, nargout=1)[0])
+            # rectMat[i] = scripts.butil.do_to_f(m.corner2rect(corner, nargout=1)[0])
 
     rectMat[0] = rect_anno[0]
     center = [[r[0]+(r[2]-1)/2.0, r[1]+(r[3]-1)/2.0] for r in rectMat]
-    errCenter = [round(butil.ssd(center[i], centerGT[i]),4)
+    errCenter = [round(scripts.butil.ssd(center[i], centerGT[i]),4)
         for i in range(seq_length)]
 
     idx = [sum([x>0 for x in r])==4 for r in rect_anno]

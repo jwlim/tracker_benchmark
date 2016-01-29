@@ -1,6 +1,5 @@
 from config import *
-from model.attribute import *
-from model.result import Result
+from scripts import *
 
 def save_results(tracker, resultList, attrList, seqNames, evalType):
     tSrc = RESULT_SRC.format(evalType) + tracker

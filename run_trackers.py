@@ -1,12 +1,10 @@
 import getopt
+
 import numpy as np
 from PIL import Image
+
 from config import *
-from model.result import Result
-from model.sequence import Sequence
-from model.attribute import Attribute
-import butil
-from trackers import *
+from scripts import *
 
 def main(argv):
     
@@ -88,7 +86,7 @@ def main(argv):
                         seqNames, evalType)
 
 def run_trackers(trackers, seqs, evalType, shiftTypeSet):
-    tmpRes_path = BENCHMARK_SRC + 'tmp/{0}/'.format(evalType)
+    tmpRes_path = RESULT_SRC.format('tmp/{0}/'.format(evalType))
     if not os.path.exists(tmpRes_path):
         os.makedirs(tmpRes_path)
 
@@ -152,14 +150,17 @@ def run_trackers(trackers, seqs, evalType, shiftTypeSet):
                     os.makedirs(rp)
                 subS = subSeqs[idx]
                 subS.name = s.name + '_' + str(idx)
-
+                if len(subS.init_rect) == 1:
+                    # matlab double to python integer
+                    subS.init_rect = map(int, subS.init_rect[0])
+                    
                 os.chdir(TRACKER_SRC + t)
                 funcName = 'run_{0}(subS, rp, SAVE_IMAGE)'.format(t)
                 try:
                     res = eval(funcName)
                 except:
                     print 'failed to execute {0} : {1}'.format(
-                        t, sys.exc_info()[1])
+                        t, sys.exc_info())
                     sys.exit(1)
                 os.chdir(WORKDIR)
                 res['seq_name'] = s.name

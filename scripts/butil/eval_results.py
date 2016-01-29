@@ -1,7 +1,6 @@
 from config import *
-from model.attribute import *
-from model.result import Result
-import butil 
+from scripts import *
+import scripts.butil
 
 def calc_result(tracker, seqs, results, evalType):
     # if not len(results) == len(seqs):
@@ -36,7 +35,7 @@ def calc_result(tracker, seqs, results, evalType):
                 anno = seq.subAnno[j]
             try:
                 aveCoverage, aveErrCenter, errCoverage, errCenter = \
-                    butil.calc_seq_err_robust(result, anno)
+                    scripts.butil.calc_seq_err_robust(result, anno)
                 seq.aveCoverage.append(aveCoverage)
                 seq.aveErrCenter.append(aveErrCenter)
                 seq.errCoverage += errCoverage
@@ -49,8 +48,9 @@ def calc_result(tracker, seqs, results, evalType):
             startFrame = int(result['startFrame'])
             endFrame = startFrame + int(result['len']) - 1
             resType = result['type']
-            res = butil.matlab_double_to_py_float(result['res'])
-
+            print result['res']
+            res = scripts.butil.matlab_double_to_py_float(result['res'])
+            print res
             if evalType == 'SRE':
                 mResult = Result(tracker, seqName, startFrame, endFrame, 
                     resType, evalType, res, result['shiftType'])

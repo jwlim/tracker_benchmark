@@ -5,7 +5,7 @@ from config import *
 def split_seq_TRE(seq, segNum, rect_anno):
     minNum = 20;
 
-    fileName = BENCHMARK_SRC + '/initOmit/' + seq.name + '.txt'
+    fileName = SEQ_SRC + seq.name + '/' + INIT_OMIT_FILE
     idxExclude = []
     if os.path.exists(fileName):
         idxExclude = np.loadtxt(fileName, dtype=int) - seq.startFrame + 1

@@ -84,7 +84,8 @@ Human5	SV, OCC, DEF
 Human7	IV, SV, OCC, DEF, MB, FM
 Human8	IV, SV, DEF
 Jogging	OCC, DEF, OPR
-Jogging2	OCC, DEF, OPR
+Jogging-1	OCC, DEF, OPR
+Jogging-2	OCC, DEF, OPR
 KiteSurf	IV, OCC, IPR, OPR
 Lemming	IV, SV, OCC, FM, OPR, OV
 Man	IV

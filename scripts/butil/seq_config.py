@@ -3,8 +3,7 @@ import zipfile
 import shutil
 
 from config import *
-from model.sequence import Sequence
-
+from scripts import *
 def setup_seqs(loadSeqs):
     seqs = make_seq_configs(loadSeqs)
     for seq in seqs:
@@ -29,15 +28,20 @@ def load_seq_config(seqName):
 
 def load_all_seq_configs():
     seqNames = os.listdir(SEQ_SRC)
+    seqNames.remove(ATTR_LIST_FILE)
+    seqNames.remove(ATTR_DESC_FILE)
     seqs = []
     for name in seqNames:
         seq = load_seq_config(name)
         seqs.append(seq)
     return seqs
 
+
 def make_seq_configs(loadSeqs):
     if loadSeqs == 'ALL':
         names =  os.listdir(SEQ_SRC)
+        names.remove(ATTR_LIST_FILE)
+        names.remove(ATTR_DESC_FILE)
     else:
         names = loadSeqs
     seqList = []
@@ -60,9 +64,9 @@ def make_seq_configs(loadSeqs):
         imgfiles = [x for x in imgfiles if x.split('.')[1] in ['jpg', 'png']]
         nz, ext, startFrame, endFrame = get_format(name, imgfiles)
         
-        attrSrc = os.path.join(src, 'attrs.txt')
+        attrSrc = os.path.join(src, ATTR_FILE)
         if not os.path.exists(attrSrc):
-            attrlist_src = os.path.join(ATTR_SRC, 'attrlist.txt')
+            attrlist_src = os.path.join(SEQ_SRC, ATTR_LIST_FILE)
             attrlistFile = open(attrlist_src)
             lines = attrlistFile.readlines()
             attrs = None

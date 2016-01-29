@@ -50,7 +50,7 @@ class Attribute:
 ##########################################################
 
 def getAttrList():
-    srcAttrFile = open(ATTR_SRC + 'src_attribute.txt')
+    srcAttrFile = open(SEQ_SRC + ATTR_DESC_FILE)
     attrLines = srcAttrFile.readlines()
     attrList = []
     for line in attrLines:

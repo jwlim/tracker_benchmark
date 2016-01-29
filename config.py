@@ -13,30 +13,28 @@ except:
 
 WORKDIR = os.path.abspath('.')
 
-BENCHMARK_SRC = './tracker_benchmark/'
+SEQ_SRC = './data/'
 
-SEQ_SRC = BENCHMARK_SRC + 'data/'
+TRACKER_SRC = './trackers/'
 
-ATTR_SRC = BENCHMARK_SRC + 'attribute/'
-
-TRACKER_SRC = BENCHMARK_SRC + 'trackers/'
-
-RESULT_SRC = BENCHMARK_SRC+ 'results/{0}/' # '{0} : OPE, SRE, TRE'
-
-VLFEAT_SRC = os.path.abspath('./vlfeat-0.9.20/toolbox')
+RESULT_SRC = './results/{0}/' # '{0} : OPE, SRE, TRE'
 
 SETUP_SEQ = True
 
-SAVE_RESULT = False
+SAVE_RESULT = True
 
 SAVE_IMAGE = False
 
 # sequence configs
-DOWNLOAD_SEQS = False
+DOWNLOAD_SEQS = True
 DOWNLOAD_URL = "http://cvlab.hanyang.ac.kr/tracker_benchmark/seq/{0}.zip"
+ATTR_LIST_FILE = 'attr_list.txt'
+ATTR_DESC_FILE = 'attr_desc.txt'
+ATTR_FILE = 'attrs.txt'
+INIT_OMIT_FILE = 'init_omit.txt'
 GT_FILE = 'groundtruth_rect.txt'
 
-# for eval results
+# for evaluating results
 thresholdSetOverlap = [x/float(20) for x in range(21)]
 thresholdSetError = range(0, 51)
 
