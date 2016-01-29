@@ -1,3 +1,4 @@
+Trakcer Benchmark (Tested on python 2.7.10)
 
 Usage
 - Default (for all trackers, all sequences, all evaltypes(OPE, SRE, TRE))
@@ -9,7 +10,7 @@ Usage
 
 
 Libraries
-- Matlab Engine for python
+- Matlab Engine for python (only needed for executing matlab script files of trackers)
 
     http://kr.mathworks.com/help/matlab/matlab-engine-for-python.html
 - matplotlib
