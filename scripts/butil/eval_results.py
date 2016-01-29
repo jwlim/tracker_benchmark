@@ -48,9 +48,7 @@ def calc_result(tracker, seqs, results, evalType):
             startFrame = int(result['startFrame'])
             endFrame = startFrame + int(result['len']) - 1
             resType = result['type']
-            print result['res']
             res = scripts.butil.matlab_double_to_py_float(result['res'])
-            print res
             if evalType == 'SRE':
                 mResult = Result(tracker, seqName, startFrame, endFrame, 
                     resType, evalType, res, result['shiftType'])

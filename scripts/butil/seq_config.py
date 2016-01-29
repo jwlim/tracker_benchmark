@@ -118,23 +118,28 @@ def get_format(name, imgfiles):
         endFrame = 460
     elif name == "Freeman4":
         endFrame = 283
+    elif name == "Diving":
+        endFrame = 215
     return nz, ext, startFrame, endFrame
 
 def download_sequence(seqName):
     file_name = SEQ_SRC + seqName + '.zip'
 
-    if seqName == 'Jogging2':
+    if seqName == 'Jogging-1' or seqName == 'Jogging-2':
+        url = DOWNLOAD_URL.format('Jogging')
+        download_and_extract_file(url, file_name, SEQ_SRC)
         src = SEQ_SRC + 'Jogging/'
-        dst = SEQ_SRC + 'Jogging2/'
-        if os.path.exists(src + 'img'):
-            shutil.copytree(src + 'img', dst + 'img')
-            shutil.move(src + 'groundtruth_rect.2.txt', dst + GT_FILE)
-        else:
-            url = DOWNLOAD_URL.format('Jogging')
-            download_and_extract_file(url, file_name, SEQ_SRC)
-            shutil.copytree(src + 'img', dst + 'img')
-            shutil.move(src + 'groundtruth_rect.2.txt', dst + GT_FILE)
-            os.rename(src + 'groundtruth_rect.1.txt', src + GT_FILE)
+        dst1 = SEQ_SRC + 'Jogging-1/'
+        dst2 = SEQ_SRC + 'Jogging-2/'
+        if not os.path.exists(dst1 + 'img'):
+            shutil.copytree(src + 'img', dst1 + 'img')
+        if not os.path.exists(dst2 + 'img'):
+            shutil.copytree(src + 'img', dst2 + 'img')
+        shutil.move(src + 'groundtruth_rect.1.txt', dst1 + GT_FILE)
+        shutil.move(src + 'groundtruth_rect.2.txt', dst2 + GT_FILE)
+        shutil.move(src + 'jogging-1.txt', dst1 + INIT_OMIT_FILE)
+        shutil.move(src + 'jogging-2.txt', dst2 + INIT_OMIT_FILE)
+        shutil.rmtree(src)
 
     elif seqName == 'Skating2-1' or seqName == 'Skating2-2':
         url = DOWNLOAD_URL.format('Skating2')
@@ -167,11 +172,6 @@ def download_sequence(seqName):
     else:
         url = DOWNLOAD_URL.format(seqName)
         download_and_extract_file(url, file_name, SEQ_SRC)
-   
-    if seqName == 'Jogging':
-        src = SEQ_SRC + 'Jogging/'
-        gtfile = src + 'groundtruth_rect.1.txt'
-        os.rename(gtfile, src + GT_FILE)
 
     if os.path.exists(SEQ_SRC + '__MACOSX'):
         shutil.rmtree(SEQ_SRC + '__MACOSX')
