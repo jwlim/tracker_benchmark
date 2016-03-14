@@ -1,5 +1,5 @@
 from config import *
-from trackers import *
+import scripts.butil
 
 def run_ORIA(seq, rp, bSaveImage):
     global m
@@ -13,5 +13,6 @@ def run_ORIA(seq, rp, bSaveImage):
     m.workspace['bSaveImage'] = bSaveImage
     func = 'run_ORIA(subS, rp, bSaveImage);'
     res = m.eval(func, nargout=1)
+    res['res'] = scripts.butil.matlab_double_to_py_float(res['res'])
     # m.quit()
     return res

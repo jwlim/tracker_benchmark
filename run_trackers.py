@@ -2,7 +2,6 @@ import getopt
 
 import numpy as np
 from PIL import Image
-
 from config import *
 from scripts import *
 
@@ -10,7 +9,7 @@ def main(argv):
     
     trackers = os.listdir(TRACKER_SRC)
     evalTypes = ['OPE', 'SRE', 'TRE']
-    loadSeqs = 'ALL'
+    loadSeqs = 'TB50'
     seqs = []
     try:
         opts, args = getopt.getopt(argv, "ht:e:s:",["tracker=","evaltype="
@@ -29,7 +28,11 @@ def main(argv):
             trackers = [x.strip() for x in arg.split(',')]
             # trackers = [arg]
         elif opt in ("-s", "--sequence"):
-            loadSeqs = [x.strip() for x in arg.split(',')]
+            loadSeqs = arg
+            if loadSeqs != 'All' and loadSeqs != 'all' and \
+                loadSeqs != 'tb50' and loadSeqs != 'tb100' and \
+                loadSeqs != 'cvpr13':
+                loadSeqs = [x.strip() for x in arg.split(',')]
         elif opt in ("-e", "--evaltype"):
             evalTypes = [x.strip() for x in arg.split(',')]
             # evalTypes = [arg]
@@ -37,27 +40,14 @@ def main(argv):
     if SETUP_SEQ:
         print 'Setup sequences ...'
         butil.setup_seqs(loadSeqs)
-
-    shiftTypeSet = ['left','right','up','down','topLeft','topRight',
-        'bottomLeft', 'bottomRight','scale_8','scale_9','scale_11','scale_12']
-
+    testname = raw_input("Input Test name : ")
     print 'Starting benchmark for {0} trackers, evalTypes : {1}'.format(
         len(trackers), evalTypes)
-
     for evalType in evalTypes:
-        if loadSeqs == 'ALL':
-            seqs = butil.load_all_seq_configs()
-        else:
-            for seqName in loadSeqs:
-                try:
-                    seq = butil.load_seq_config(seqName)
-                    seqs.append(seq)
-                except:
-                    print 'Cannot load sequence \'{0}\''.format(seqName)
-                    sys.exit(1)
+        seqNames = butil.get_seq_names(loadSeqs)
+        seqs = butil.load_seq_configs(seqNames)
         trackerResults = run_trackers(
             trackers, seqs, evalType, shiftTypeSet)
-        seqNames = [s.name for s in seqs]
         for tracker in trackers:
             results = trackerResults[tracker]
             if len(results) > 0:
@@ -82,8 +72,7 @@ def main(argv):
                     print "\tfailures : {0:.1f}".format(attr.error)
 
                 if SAVE_RESULT : 
-                    butil.save_results(tracker, evalResults, attrList, 
-                        seqNames, evalType)
+                    butil.save_scores(attrList, testname)
 
 def run_trackers(trackers, seqs, evalType, shiftTypeSet):
     tmpRes_path = RESULT_SRC.format('tmp/{0}/'.format(evalType))
@@ -96,49 +85,21 @@ def run_trackers(trackers, seqs, evalType, shiftTypeSet):
     trackerResults = dict((t,list()) for t in trackers)
     for idxSeq in range(numSeq):
         s = seqs[idxSeq]
-        s.len = s.endFrame - s.startFrame + 1
-        s.s_frames = [None] * s.len
-
-        for i in range(s.len):
-            image_no = s.startFrame + i
-            _id = s.imgFormat.format(image_no)
-            s.s_frames[i] = s.path + _id
         
-        rect_anno = s.gtRect
-        numSeg = 20.0
-        subSeqs, subAnno = butil.split_seq_TRE(s, numSeg, rect_anno)
-        s.subAnno = subAnno
-        img = Image.open(s.s_frames[0])
-        (imgWidth, imgHeight) = img.size
-
-        if evalType == 'OPE':
-            subS = subSeqs[0]
-            subSeqs = []
-            subSeqs.append(subS)
-
-            subA = subAnno[0]
-            subAnno = []
-            subAnno.append(subA)
-
-        elif evalType == 'SRE':
-            subS = subSeqs[0]
-            subA = subAnno[0]
-            subSeqs = []
-            subAnno = []
-            r = subS.init_rect
-            for i in range(len(shiftTypeSet)):
-                subSeqs.append(subS)
-                shiftType = shiftTypeSet[i]
-                subSeqs[i].init_rect = butil.shift_init_BB(r, shiftType, 
-                    imgWidth, imgHeight)
-                subSeqs[i].shiftType = shiftType
-                subAnno.append(subA)
+        subSeqs, subAnno = butil.get_sub_seqs(s, 20.0, evalType)
 
         for idxTrk in range(len(trackers)):         
             t = trackers[idxTrk]
             if not os.path.exists(TRACKER_SRC + t):
                 print '{0} does not exists'.format(t)
                 sys.exit(1)
+            if not OVERWRITE_RESULT:
+                trk_src = os.path.join(RESULT_SRC.format(evalType), t)
+                result_src = os.path.join(trk_src, s.name+'.json')
+                if os.path.exists(result_src):
+                    seqResults = butil.load_seq_result(evalType, t, s.name)
+                    trackerResults[t].append(seqResults)
+                    continue
             seqResults = []
             seqLen = len(subSeqs)
             for idx in range(seqLen):
@@ -150,9 +111,6 @@ def run_trackers(trackers, seqs, evalType, shiftTypeSet):
                     os.makedirs(rp)
                 subS = subSeqs[idx]
                 subS.name = s.name + '_' + str(idx)
-                if len(subS.init_rect) == 1:
-                    # matlab double to python integer
-                    subS.init_rect = map(int, subS.init_rect[0])
                     
                 os.chdir(TRACKER_SRC + t)
                 funcName = 'run_{0}(subS, rp, SAVE_IMAGE)'.format(t)
@@ -161,17 +119,23 @@ def run_trackers(trackers, seqs, evalType, shiftTypeSet):
                 except:
                     print 'failed to execute {0} : {1}'.format(
                         t, sys.exc_info())
-                    sys.exit(1)
+                    os.chdir(WORKDIR)         
+                    break
                 os.chdir(WORKDIR)
-                res['seq_name'] = s.name
-                res['len'] = subS.len
-                res['annoBegin'] = subS.annoBegin
-                res['startFrame'] = subS.startFrame
 
                 if evalType == 'SRE':
-                    res['shiftType'] = shiftTypeSet[idx]
-                seqResults.append(res)
+                    r = Result(t, s.name, subS.startFrame, subS.endFrame,
+                        res['type'], evalType, res['res'], res['fps'], shiftTypeSet[idx])
+                else:
+                    r = Result(t, s.name, subS.startFrame, subS.endFrame,
+                        res['type'], evalType, res['res'], res['fps'], None)
+                try: r.tmplsize = res['tmplsize'][0]
+                except: pass
+                r.refresh_dict()
+                seqResults.append(r)
             #end for subseqs
+            if SAVE_RESULT:
+                butil.save_seq_result(seqResults)
 
             trackerResults[t].append(seqResults)
         #end for tracker

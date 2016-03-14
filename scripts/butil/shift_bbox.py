@@ -25,15 +25,15 @@ def shift_init_BB(r, shiftType, imgH, imgW):
         r = map(round, [center[0]-w/2.0, center[1]-h/2.0, w, h])
 
     elif shiftType == 'scale_11':
-        ratio = 01.1
+        ratio = 1.1
         w = ratio * r[2]
         h = ratio * r[3]
         r = map(round, [center[0]-w/2.0, center[1]-h/2.0, w, h])
 
     elif shiftType == 'scale_12':
         ratio = 1.2
-        w = ratio * r[2]
-        h = ratio * r[3]
+        w = ratio * r[2] # 104.4
+        h = ratio * r[3] # 382.8
         r = map(round, [center[0]-w/2.0, center[1]-h/2.0, w, h])
 
     elif shiftType == 'scale_13':

@@ -1,0 +1,24 @@
+<xml>
+	<properties>
+		<!-- resize the image to specified scale for tracking -->
+		<imgScale>0.10</imgScale>
+		<!-- the patch size -->
+		<patchSize>5</patchSize>
+		<!-- dictionary size (percentage) -->
+		<dictionarySize>0.15</dictionarySize>
+		<!-- the sparsity parameter K -->
+		<sparistyK>3</sparistyK>
+	</properties>
+	<sequence>
+		<name>BlurBody_0</name>
+		<gtFile>./config/BlurBody_0_gt.txt</gtFile>
+		<imgFolder>D:\tracker_benchmark\data\BlurBody\img\</imgFolder>
+		<imgIdFormat>%04d</imgIdFormat>
+		<imgExt>jpg</imgExt>
+		<startFrame>1</startFrame>
+		<endFrame>334</endFrame>
+		<writeImage>0</writeImage>
+		<showResult>0</showResult>
+		<outputFolder>./results/</outputFolder>
+	</sequence>
+</xml>

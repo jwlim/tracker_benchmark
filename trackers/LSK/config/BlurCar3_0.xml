@@ -1,0 +1,24 @@
+<xml>
+	<properties>
+		<!-- resize the image to specified scale for tracking -->
+		<imgScale>0.20</imgScale>
+		<!-- the patch size -->
+		<patchSize>5</patchSize>
+		<!-- dictionary size (percentage) -->
+		<dictionarySize>0.15</dictionarySize>
+		<!-- the sparsity parameter K -->
+		<sparistyK>3</sparistyK>
+	</properties>
+	<sequence>
+		<name>BlurCar3_0</name>
+		<gtFile>./config/BlurCar3_0_gt.txt</gtFile>
+		<imgFolder>D:\tracker_benchmark\data\BlurCar3\img\</imgFolder>
+		<imgIdFormat>%04d</imgIdFormat>
+		<imgExt>jpg</imgExt>
+		<startFrame>3</startFrame>
+		<endFrame>359</endFrame>
+		<writeImage>0</writeImage>
+		<showResult>0</showResult>
+		<outputFolder>./results/</outputFolder>
+	</sequence>
+</xml>

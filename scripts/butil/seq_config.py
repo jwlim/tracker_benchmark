@@ -1,9 +1,51 @@
 import urllib2
 import zipfile
 import shutil
+from PIL import Image
 
 from config import *
 from scripts import *
+import scripts.butil
+
+def get_sub_seqs(s, numSeg, evalType):
+    s.len = s.endFrame - s.startFrame + 1
+    s.s_frames = [None] * s.len
+
+    for i in range(s.len):
+        image_no = s.startFrame + i
+        _id = s.imgFormat.format(image_no)
+        s.s_frames[i] = s.path + _id
+    
+    rect_anno = s.gtRect
+    subSeqs, subAnno = scripts.butil.split_seq_TRE(s, numSeg, rect_anno)
+    s.subAnno = subAnno
+    img = Image.open(s.s_frames[0])
+    (imgWidth, imgHeight) = img.size
+
+    if evalType == 'OPE':
+        subS = subSeqs[0]
+        subSeqs = []
+        subSeqs.append(subS)
+
+        subA = subAnno[0]
+        subAnno = []
+        subAnno.append(subA)
+
+    elif evalType == 'SRE':
+        subS = subSeqs[0]
+        subA = subAnno[0]
+        subSeqs = []
+        subAnno = []
+        r = subS.init_rect
+        for i in range(len(shiftTypeSet)):
+            subSeqs.append(subS)
+            shiftType = shiftTypeSet[i]
+            subSeqs[i].init_rect = scripts.butil.shift_init_BB(r, shiftType, 
+                imgHeight, imgWidth)
+            subSeqs[i].shiftType = shiftType
+            subAnno.append(subA)
+    return subSeqs, subAnno
+
 def setup_seqs(loadSeqs):
     seqs = make_seq_configs(loadSeqs)
     for seq in seqs:
@@ -27,30 +69,51 @@ def load_seq_config(seqName):
     return seq
 
 def load_all_seq_configs():
-    seqNames = os.listdir(SEQ_SRC)
-    seqNames.remove(ATTR_LIST_FILE)
-    seqNames.remove(ATTR_DESC_FILE)
-    seqs = []
+    seqNames = get_seq_names('ALL')
+    seqs = list()
     for name in seqNames:
         seq = load_seq_config(name)
         seqs.append(seq)
     return seqs
 
+def load_seq_configs(seqNames):
+    return [load_seq_config(x) for x in seqNames]
 
-def make_seq_configs(loadSeqs):
-    if loadSeqs == 'ALL':
+def get_seq_names(loadSeqs):
+    if type(loadSeqs) is list:
+        return loadSeqs
+    if loadSeqs.lower() == 'all':
         names =  os.listdir(SEQ_SRC)
         names.remove(ATTR_LIST_FILE)
         names.remove(ATTR_DESC_FILE)
+        names.remove(TB_50_FILE)
+        names.remove(TB_100_FILE)
+    elif loadSeqs.lower() == 'tb50':
+        tb_50 = open(SEQ_SRC+TB_50_FILE)
+        seq_list = tb_50.readlines()
+        names = sorted([x.split('\t')[0].strip() for x in seq_list])
+    elif loadSeqs.lower() == 'tb100':
+        tb_100 = open(SEQ_SRC+TB_100_FILE)
+        seq_list = tb_100.readlines()
+        names = sorted([x.split('\t')[0].strip() for x in seq_list])
+    elif loadSeqs.lower() == 'cvpr13':
+        cvpr13 = open(SEQ_SRC+CVPR_13_FILE)
+        seq_list = cvpr13.readlines()
+        names = sorted([x.split('\t')[0].strip() for x in seq_list])
     else:
         names = loadSeqs
+    return names
+
+def make_seq_configs(loadSeqs):
+    names = get_seq_names(loadSeqs)
     seqList = []
     for name in names:  
         src = SEQ_SRC + name
         imgSrc = src + '/img/'
         
         path = imgSrc
-        
+        if not os.path.exists(src):
+            os.makedirs(src)
         if not os.path.exists(imgSrc):
             print name + ' does not have img directory'
             if DOWNLOAD_SEQS:
@@ -72,7 +135,7 @@ def make_seq_configs(loadSeqs):
             attrs = None
             for line in lines:
                 if name in line:
-                    attrs = line.split('\t')[1]
+                    attrs = [x.strip() for x in line.split('\t')[1]]
                     attrFile = open(attrSrc, 'w')
                     attrFile.write(attrs)
                     attrFile.close()
@@ -82,7 +145,7 @@ def make_seq_configs(loadSeqs):
                 
         attrFile = open(attrSrc)
         lines = attrFile.readline()
-        attributes = lines.split(', ')
+        attributes = [x.strip() for x in lines.split(', ')]
 
         imgFormat = "{0}{1}{2}{3}".format("{0:0",nz,"d}.",ext)
 
@@ -159,13 +222,13 @@ def download_sequence(seqName):
         url = DOWNLOAD_URL.format('Human4')
         download_and_extract_file(url, file_name, SEQ_SRC)
         src = SEQ_SRC + 'Human4/'
-        dst1 = SEQ_SRC + 'Human4-1/'
+        # dst1 = SEQ_SRC + 'Human4-1/'
         dst2 = SEQ_SRC + 'Human4-2/'
-        if not os.path.exists(dst1 + 'img'):
-            shutil.copytree(src + 'img', dst1 + 'img')
+        # if not os.path.exists(dst1 + 'img'):
+        #     shutil.copytree(src + 'img', dst1 + 'img')
         if not os.path.exists(dst2 + 'img'):
             shutil.copytree(src + 'img', dst2 + 'img')
-        shutil.move(src + 'groundtruth_rect.1.txt', dst1 + GT_FILE)
+        # shutil.move(src + 'groundtruth_rect.1.txt', dst1 + GT_FILE)
         shutil.move(src + 'groundtruth_rect.2.txt', dst2 + GT_FILE)
         shutil.rmtree(src)
 

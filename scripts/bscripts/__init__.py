@@ -19,3 +19,5 @@ from run_SCM import *
 from run_SMS import *
 from run_Struck import *
 from run_TLD import *
+from run_MUSTer import *
+from run_MEEM import *

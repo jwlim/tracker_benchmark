@@ -19,7 +19,7 @@ def run_Frag(seq, rp, bSaveImage):
 
     result = dict()
     res = np.loadtxt('{0}_Frag.txt'.format(seq.name), dtype=int)
-    result['res'] = res
+    result['res'] = res.tolist()
     result['type'] = 'rect'
     result['fps'] = round(seq.len / duration, 3)
 

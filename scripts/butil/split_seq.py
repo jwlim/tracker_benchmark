@@ -7,7 +7,7 @@ def split_seq_TRE(seq, segNum, rect_anno):
 
     fileName = SEQ_SRC + seq.name + '/' + INIT_OMIT_FILE
     idxExclude = []
-    if os.path.exists(fileName):
+    if USE_INIT_OMIT and os.path.exists(fileName):
         idxExclude = np.loadtxt(fileName, dtype=int) - seq.startFrame + 1
         if not isinstance(idxExclude[0], np.ndarray):
             idxExclude = [idxExclude]

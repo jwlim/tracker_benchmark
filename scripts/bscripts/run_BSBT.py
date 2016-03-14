@@ -23,8 +23,8 @@ def run_BSBT(seq, rp, bSaveImage):
     duration = time.clock() - tic
 
     result = dict()
-    res = np.loadtxt(path + '{0}_BSBT.txt'.format(seq.name), dtype=int)
-    result['res'] = res
+    res = np.loadtxt('{0}_BSBT.txt'.format(seq.name), dtype=int)
+    result['res'] = res.tolist()
     result['type'] = 'rect'
     result['fps'] = round(seq.len / duration, 3)
 

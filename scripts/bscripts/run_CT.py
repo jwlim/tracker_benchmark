@@ -1,6 +1,5 @@
 from config import *
-from trackers import *
-
+import scripts.butil
 def run_CT(seq, rp, bSaveImage):
     global m
     if m == None:
@@ -13,5 +12,6 @@ def run_CT(seq, rp, bSaveImage):
     m.workspace['bSaveImage'] = bSaveImage
     func = 'run_CT(subS, rp, bSaveImage);'
     res = m.eval(func, nargout=1)
+    res['res'] = scripts.butil.matlab_double_to_py_float(res['res'])
     # m.quit()
     return res

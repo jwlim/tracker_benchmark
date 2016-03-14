@@ -23,7 +23,7 @@ def run_MIL(seq, rp, bSaveImage):
 
     result = dict()
     res = np.loadtxt(path + '{0}_MIL.txt'.format(seq.name), dtype=int)
-    result['res'] = res
+    result['res'] = res.tolist()
     result['type'] = 'rect'
     result['fps'] = round(seq.len / duration, 3)
 
