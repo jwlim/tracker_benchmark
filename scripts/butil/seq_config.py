@@ -135,7 +135,7 @@ def make_seq_configs(loadSeqs):
             attrs = None
             for line in lines:
                 if name in line:
-                    attrs = [x.strip() for x in line.split('\t')[1]]
+                    attrs = line.split('\t')[1]
                     attrFile = open(attrSrc, 'w')
                     attrFile.write(attrs)
                     attrFile.close()
