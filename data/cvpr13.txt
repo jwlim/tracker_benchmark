@@ -1,0 +1,51 @@
+BasketBall	IV, OCC, DEF, OPR, BC
+Bolt	OCC, DEF, IPR, OPR
+Boy	SV, MB, FM, IPR, OPR
+Car4	IV ,SV
+CarDark	IV ,BC
+CarScale	SV, OCC, FM, IPR, OPR
+Coke	IV, OCC, FM, IPR, OPR, BC
+Couple	SV, DEF, FM, OPR, BC
+Crossing	SV, DEF, FM, OPR, BC
+David	IV, SV, OCC, DEF, MB, IPR, OPR
+David2	IPR, OPR
+David3	OCC, DEF, OPR, BC
+Deer	MB, FM, IPR, BC, LR
+Dog1	SV, IPR, OPR
+Doll	IV, SV, OCC, IPR, OPR
+Dudek	SV, OCC, DEF, FM, IPR, OPR, OV, BC
+FaceOcc1	OCC
+FaceOcc2	IV, OCC, IPR, OPR
+Fish	IV
+FleetFace	SV, DEF, MB, FM, IPR, OPR
+Football	OCC, IPR, OPR, BC
+Football1	IPR, OPR, BC
+Freeman1	SV, IPR, OPR
+Freeman3	SV, IPR, OPR
+Freeman4	SV, OCC, IPR ,OPR
+Girl	SV, OCC ,IPR, OPR
+Ironman	IV, SV, OCC, MB, FM, IPR, OPR, OV, BC, LR
+Jogging-1	OCC, DEF, OPR
+Jogging-2	OCC, DEF, OPR
+Jumping	MB, FM
+Lemming	IV, SV, OCC, FM, OPR, OV
+Liquor	IV, SV, OCC, MB, FM, OPR, OV, BC
+Matrix	IV, SV, OCC, FM, IPR, OPR, BC
+Mhyang	IV, DEF, OPR, BC
+MotorRolling	IV, SV, MB, FM, IPR, BC, LR
+MountainBike	IPR, OPR, BC
+Shaking	IV, SV, IPR, OPR, BC
+Singer1	IV, SV, OCC, OPR
+Singer2	IV, DEF, IPR, OPR, BC
+Skating1	IV, SV, OCC, DEF, OPR, BC
+Skiing	IV, SV, DEF, IPR, OPR
+Soccer	IV, SV, OCC, MB, FM, IPR ,OPR, BC
+Subway	OCC, DEF, BC
+Suv	OCC, IPR, OV
+Sylvester	IV, IPR, OPR
+Tiger1	IV, OCC, DEF, MB, FM, IPR, OPR
+Tiger2	IV, OCC, DEF, MB, FM, IPR, OPR, OV
+Trellis	IV, SV, IPR, OPR, BC
+Walking	SV, OCC, DEF,
+Walking2	SV, OCC, LR
+Woman	IV, SV, OCC, DEF, MB, FM, OPR
