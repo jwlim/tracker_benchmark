@@ -1,6 +1,8 @@
 import urllib2
 import zipfile
 import shutil
+import copy
+
 from PIL import Image
 
 from config import *
@@ -19,8 +21,6 @@ def get_sub_seqs(s, numSeg, evalType):
     rect_anno = s.gtRect
     subSeqs, subAnno = scripts.butil.split_seq_TRE(s, numSeg, rect_anno)
     s.subAnno = subAnno
-    img = Image.open(s.s_frames[0])
-    (imgWidth, imgHeight) = img.size
 
     if evalType == 'OPE':
         subS = subSeqs[0]
@@ -37,12 +37,15 @@ def get_sub_seqs(s, numSeg, evalType):
         subSeqs = []
         subAnno = []
         r = subS.init_rect
+        img = Image.open(s.s_frames[0])
+        (imgWidth, imgHeight) = img.size
         for i in range(len(shiftTypeSet)):
-            subSeqs.append(subS)
+            s = copy.deepcopy(subS)
             shiftType = shiftTypeSet[i]
-            subSeqs[i].init_rect = scripts.butil.shift_init_BB(r, shiftType, 
+            s.init_rect = scripts.butil.shift_init_BB(s.init_rect, shiftType, 
                 imgHeight, imgWidth)
-            subSeqs[i].shiftType = shiftType
+            s.shiftType = shiftType
+            subSeqs.append(s)
             subAnno.append(subA)
     return subSeqs, subAnno
 
