@@ -8,7 +8,7 @@ def run_MUSTer(seq, rp, bSaveImage):
     source['n_frames'] = seq.len
     source['video_path'] = seq.path
     img_files = sorted([x for x in os.listdir(seq.path) if x.endswith(seq.ext)])
-    source['img_files'] = img_files
+    source['img_files'] = img_files[seq.startFrame-1:seq.endFrame]
     if m == None:
         print 'Starting matlab engine...'
         m = matlab.engine.start_matlab()
