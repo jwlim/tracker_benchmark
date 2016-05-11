@@ -6,7 +6,7 @@ Usage
 
 - For specific trackers, sequences, evaltypes    
     - command : python run_trackers.py -t "tracker" -s "sequence" -e "evaltype"
-    - e.g : python run_trackers.py -t IVT,TLD -s Couple,Crossing -e OPE,SRE)
+    - e.g. : python run_trackers.py -t IVT,TLD -s Couple,Crossing -e OPE,SRE)
 
 
 Libraries
@@ -18,3 +18,8 @@ Libraries
 - Python Imaging Library (PIL)
 
     http://www.pythonware.com/products/pil/
+
+Troubleshooting
+- Segmentaion Fault when running 'python run_tracker.py ...' on MacOSX
+    - Set DYLD_LIBRARY_PATH environment variable.
+    - e.g.: export DYLD_LIBRARY_PATH=/usr/local/Cellar/python/2.7.11/Frameworks/Python.framework/Versions/Current/lib/:$DYLD_LIBRARY_PATH
