@@ -6,8 +6,10 @@ Usage
 
 - For specific trackers, sequences, evaltypes    
     - command : python run_trackers.py -t "tracker" -s "sequence" -e "evaltype"
-    - e.g. : python run_trackers.py -t IVT,TLD -s Couple,Crossing -e OPE,SRE)
-
+    - sequence can be name of Sequence, 'tb50', 'tb100' and 'cvpr13' (using data/tb_50.txt, tb_100.txt, cvpr13.txt)
+    - e.g.
+        - python run_trackers.py -t IVT,TLD -s Couple,Crossing -e OPE,SRE)
+        - python run_trackers.py -s tb50 
 
 Libraries
 - Matlab Engine for python (only needed for executing matlab script files of trackers)
