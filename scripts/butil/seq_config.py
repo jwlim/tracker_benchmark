@@ -137,7 +137,7 @@ def make_seq_configs(loadSeqs):
             lines = attrlistFile.readlines()
             attrs = None
             for line in lines:
-                if name in line:
+                if name.lower() in line.lower():
                     attrs = line.split('\t')[1]
                     attrFile = open(attrSrc, 'w')
                     attrFile.write(attrs)
