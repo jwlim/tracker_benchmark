@@ -129,7 +129,7 @@ def run_trackers(trackers, seqs, evalType, shiftTypeSet):
                 else:
                     r = Result(t, s.name, subS.startFrame, subS.endFrame,
                         res['type'], evalType, res['res'], res['fps'], None)
-                try: r.tmplsize = res['tmplsize'][0]
+                try: r.tmplsize = butil.d_to_f(res['tmplsize'][0])
                 except: pass
                 r.refresh_dict()
                 seqResults.append(r)
