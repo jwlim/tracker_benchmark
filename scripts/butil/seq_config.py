@@ -91,6 +91,7 @@ def get_seq_names(loadSeqs):
         names.remove(ATTR_DESC_FILE)
         names.remove(TB_50_FILE)
         names.remove(TB_100_FILE)
+        names.remove(CVPR_13_FILE)
     elif loadSeqs.lower() == 'tb50':
         tb_50 = open(SEQ_SRC+TB_50_FILE)
         seq_list = tb_50.readlines()
