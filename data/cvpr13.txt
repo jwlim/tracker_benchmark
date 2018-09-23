@@ -1,4 +1,4 @@
-BasketBall	IV, OCC, DEF, OPR, BC
+Basketball	IV, OCC, DEF, OPR, BC
 Bolt	OCC, DEF, IPR, OPR
 Boy	SV, MB, FM, IPR, OPR
 Car4	IV ,SV

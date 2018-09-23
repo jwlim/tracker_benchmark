@@ -1,4 +1,4 @@
-BasketBall	IV, OCC, DEF, OPR, BC
+Basketball	IV, OCC, DEF, OPR, BC
 Biker	SV, OCC, MB, FM, OPR, OV, LR
 Bird1	DEF, FM, OV
 BlurBody	SV, DEF, MB, FM, IPR
