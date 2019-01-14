@@ -41,6 +41,7 @@ def main():
             print "invalid number"
 
     src = src + '/' + tracker + '/'
+    print src
     seqs = [x for x in os.listdir(src) if x.endswith('.json')]    
   
     while True:
@@ -77,9 +78,8 @@ def main():
             continue
 
         seq = butil.load_seq_config(result.seqName)
-        res = butil.res_to_rect(result)
         startFrame = result.startFrame
-        view_result(seq, res, startFrame)
+        view_result(seq, result.res, startFrame)
     
 
 def view_result(seq, res, startIndex):
