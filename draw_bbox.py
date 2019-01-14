@@ -40,8 +40,7 @@ def main():
         except:
             print "invalid number"
 
-    src = src + '/' + tracker + '/'
-    print src
+    src = os.path.join(src, tracker)
     seqs = [x for x in os.listdir(src) if x.endswith('.json')]    
   
     while True:
