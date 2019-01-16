@@ -90,9 +90,6 @@ def run_trackers(trackers, seqs, evalType, shiftTypeSet):
 
         for idxTrk in range(len(trackers)):         
             t = trackers[idxTrk]
-            if not os.path.exists(TRACKER_SRC + t):
-                print '{0} does not exists'.format(t)
-                sys.exit(1)
             if not OVERWRITE_RESULT:
                 trk_src = os.path.join(RESULT_SRC.format(evalType), t)
                 result_src = os.path.join(trk_src, s.name+'.json')
