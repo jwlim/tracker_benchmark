@@ -108,17 +108,22 @@ def run_trackers(trackers, seqs, evalType, shiftTypeSet):
                     os.makedirs(rp)
                 subS = subSeqs[idx]
                 subS.name = s.name + '_' + str(idx)
-                    
-                os.chdir(TRACKER_SRC + t)
+                
+                move_dir = False
+                if os.path.exists(os.path.join(TRACKER_SRC, t)):
+                    move_dir = True
+                    os.chdir(os.path.join(TRACKER_SRC, t))
                 funcName = 'run_{0}(subS, rp, SAVE_IMAGE)'.format(t)
                 try:
                     res = eval(funcName)
                 except:
                     print 'failed to execute {0} : {1}'.format(
                         t, sys.exc_info())
-                    os.chdir(WORKDIR)         
+                    if move_dir:
+                        os.chdir(WORKDIR)         
                     break
-                os.chdir(WORKDIR)
+                if move_dir:
+                    os.chdir(WORKDIR)
 
                 if evalType == 'SRE':
                     r = Result(t, s.name, subS.startFrame, subS.endFrame,
