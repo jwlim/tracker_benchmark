@@ -12,7 +12,8 @@ class Score:
     # successRateList
 
     def __init__(self, name, desc, tracker=None, evalType=None, seqs=[],
-        overlapScores=[], errorNum=[], overlap=0, error=0, successRateList=[]):
+        overlapScores=[], errorNum=[], overlap=0, error=0, successRateList=[],
+        precisionList=[]):
         self.name = name
         self.desc = desc
         self.tracker = tracker
@@ -23,6 +24,7 @@ class Score:
         self.overlap = overlap
         self.error = error
         self.successRateList = successRateList
+        self.precisionList = precisionList
 
         self.__dict__ = OrderedDict([
             ('name', self.name),
@@ -34,7 +36,8 @@ class Score:
             ('error', self.error),
             ('overlapScores', self.overlapScores),
             ('errorNum', self.errorNum),
-            ('successRateList', self.successRateList)])
+            ('successRateList', self.successRateList),
+            ('precisionList', self.precisionList)])
 
     def refresh_dict(self):
         self.__dict__ = OrderedDict([
@@ -47,7 +50,8 @@ class Score:
             ('error', self.error),
             ('overlapScores', self.overlapScores),
             ('errorNum', self.errorNum),
-            ('successRateList', self.successRateList)])
+            ('successRateList', self.successRateList),
+            ('precisionList', self.precisionList)])
 
     def __lt__(self, other):
         return self.name < other.name
