@@ -8,13 +8,13 @@ Usage
     - command: python run_trackers.py -t "tracker" -s "sequence" -e "evaltype"
     - sequence can be name of Sequence, 'tb50', 'tb100' and 'cvpr13' (using data/tb_50.txt, tb_100.txt, cvpr13.txt)
     - e.g.
-        - python run_trackers.py -t IVT,TLD -s Couple,Crossing -e OPE,SRE)
-        - python run_trackers.py -s tb50 
+        - `python run_trackers.py -t IVT,TLD -s Couple,Crossing -e OPE,SRE`)
+        - `python run_trackers.py -s tb50` 
 
 - Plotting
-    - Success rate plotting command: python draw_graph.py
-    - Precision plotting commaind: python draw_graph.py precision
-    - Draw bbox results: python draw_bbox.py
+    - Success rate plotting command: `python draw_graph.py`
+    - Precision plotting commaind: `python draw_graph.py precision`
+    - Draw bbox results: `python draw_bbox.py`
 
 Libraries
 - Matlab Engine for python (only needed for executing matlab script files of trackers)
