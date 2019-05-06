@@ -2,6 +2,7 @@ import urllib2
 import zipfile
 import shutil
 import copy
+import json
 
 from PIL import Image
 
