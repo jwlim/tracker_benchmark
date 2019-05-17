@@ -17,7 +17,7 @@ def get_sub_seqs(s, numSeg, evalType):
         image_no = s.startFrame + i
         _id = s.imgFormat.format(image_no)
         s.s_frames[i] = s.path + _id
-    
+
     rect_anno = s.gtRect
     subSeqs, subAnno = scripts.butil.split_seq_TRE(s, numSeg, rect_anno)
     s.subAnno = subAnno
@@ -42,7 +42,7 @@ def get_sub_seqs(s, numSeg, evalType):
         for i in range(len(shiftTypeSet)):
             s = copy.deepcopy(subS)
             shiftType = shiftTypeSet[i]
-            s.init_rect = scripts.butil.shift_init_BB(s.init_rect, shiftType, 
+            s.init_rect = scripts.butil.shift_init_BB(s.init_rect, shiftType,
                 imgHeight, imgWidth)
             s.shiftType = shiftType
             subSeqs.append(s)
@@ -110,10 +110,10 @@ def get_seq_names(loadSeqs):
 def make_seq_configs(loadSeqs):
     names = get_seq_names(loadSeqs)
     seqList = []
-    for name in names:  
+    for name in names:
         src = SEQ_SRC + name
         imgSrc = src + '/img/'
-        
+
         path = imgSrc
         if not os.path.exists(src):
             os.makedirs(src)
@@ -129,7 +129,7 @@ def make_seq_configs(loadSeqs):
         imgfiles = sorted(os.listdir(imgSrc))
         imgfiles = [x for x in imgfiles if x.split('.')[1] in ['jpg', 'png']]
         nz, ext, startFrame, endFrame = get_format(name, imgfiles)
-        
+
         attrSrc = os.path.join(src, ATTR_FILE)
         if not os.path.exists(attrSrc):
             attrlist_src = os.path.join(SEQ_SRC, ATTR_LIST_FILE)
@@ -145,7 +145,7 @@ def make_seq_configs(loadSeqs):
                     break
             if attrs == None:
                 sys.exit(name + ' does not have attrlist')
-                
+
         attrFile = open(attrSrc)
         lines = attrFile.readline()
         attributes = [x.strip() for x in lines.split(', ')]
@@ -238,12 +238,12 @@ def download_sequence(seqName):
     else:
         url = DOWNLOAD_URL.format(seqName)
         download_and_extract_file(url, file_name, SEQ_SRC)
-            
+
     if os.path.exists(SEQ_SRC + '__MACOSX'):
         shutil.rmtree(SEQ_SRC + '__MACOSX')
-        
 
-def download_and_extract_file(url, dst, ext_dst):  
+
+def download_and_extract_file(url, dst, ext_dst):
     print 'Connecting to {0} ...'.format(url)
     try:
         u = urllib2.urlopen(url)
